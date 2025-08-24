@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>System Info (Bring-Your-Own-Machine)</title>
+  <style>
+    body{font-family:system-ui,Arial,Helvetica;margin:2rem;max-width:800px}
+    code,pre{background:#f4f4f4;padding:6px 8px;border-radius:6px}
+    .mono{font-family:ui-monospace,Consolas,monospace}
+  </style>
+</head>
+<body>
+  <h1>Get your system info</h1>
+  <ol>
+    <li>Click “Generate command”</li>
+    <li>Paste the command into your terminal and run it</li>
+    <li>Come back and see your results below</li>
+  </ol>
+
+  <button id="gen">Generate command</button>
+  <p id="cmd" class="mono"></p>
+
+  <h2>Results</h2>
+  <pre id="out">No data yet…</pre>
+
+<script>
+const genBtn = document.getElementById("gen");
+const cmdEl = document.getElementById("cmd");
+const outEl = document.getElementById("out");
+let runId = null, timer = null;
+
+async function poll() {
+  if (!runId) return;
+  const r = await fetch(`/api/results/${runId}`);
+  const j = await r.json();
+  if (j.payload){
+    outEl.textContent = JSON.stringify(j.payload, null, 2);
+    clearInterval(timer);
+  }
+}
+
+genBtn.onclick = async () => {
+  const r = await fetch("/api/new-run", {method:"POST"});
+  const j = await r.json();
+  runId = j.run_id;
+
+  // One-liner command the user runs locally
+  const server = window.location.origin; // e.g. http://localhost:5000
+  const cmd = `bash -c 'curl -sL ${server}/client.sh | bash -s -- ${runId}'`;
+  cmdEl.textContent = cmd;
+
+  outEl.textContent = "Waiting for data...";
+  poll();
+  timer = setInterval(poll, 2000);
+};
+</script>
+</body>
+</html>
