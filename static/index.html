@@ -7,6 +7,7 @@
     body{font-family:system-ui,Arial,Helvetica;margin:2rem;max-width:800px}
     code,pre{background:#f4f4f4;padding:6px 8px;border-radius:6px}
     .mono{font-family:ui-monospace,Consolas,monospace}
+    button{padding:8px 12px;border:1px solid #ddd;border-radius:8px;cursor:pointer}
   </style>
 </head>
 <body>
@@ -40,19 +41,22 @@ async function poll() {
 }
 
 genBtn.onclick = async () => {
-  const r = await fetch("/api/new-run", {method:"POST"});
+  const r = await fetch("/api/new-run", { method: "POST" });
   const j = await r.json();
   runId = j.run_id;
 
-  // One-liner command the user runs locally
-  const server = window.location.origin; // e.g. http://localhost:5000
-  const cmd = `SERVER_URL=${server} bash -c 'curl -fsSL ${server}/client.sh?v=3 | bash -s -- ${runId}'`;
+  // Always post back to this site's origin (Render URL in production)
+  const origin = window.location.origin;
+  // Cache-bust client.sh with ?v=3 to avoid stale versions
+  const cmd = `SERVER_URL=${origin} bash -c 'curl -fsSL ${origin}/client.sh?v=3 | bash -s -- ${runId}'`;
+
   cmdEl.textContent = cmd;
 
   outEl.textContent = "Waiting for data...";
   poll();
-  timer = setInterval(poll, 2000)
+  timer = setInterval(poll, 2000);
 };
 </script>
 </body>
 </html>
+
