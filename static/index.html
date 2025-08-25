@@ -46,12 +46,12 @@ genBtn.onclick = async () => {
 
   // One-liner command the user runs locally
   const server = window.location.origin; // e.g. http://localhost:5000
-  const cmd = `bash -c 'curl -sL ${server}/client.sh | bash -s -- ${runId}'`;
+  const cmd = `SERVER_URL=${server} bash -c 'curl -fsSL ${server}/client.sh?v=3 | bash -s -- ${runId}'`;
   cmdEl.textContent = cmd;
 
   outEl.textContent = "Waiting for data...";
   poll();
-  timer = setInterval(poll, 2000);
+  timer = setInterval(poll, 2000)
 };
 </script>
 </body>
