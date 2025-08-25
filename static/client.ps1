@@ -21,8 +21,6 @@ function Send-SystemInfo {
       cpu_model  = $cpu.Name
       cores      = $cpu.NumberOfLogicalProcessors
       memory     = "{0:N1} GB total" -f ($cs.TotalPhysicalMemory/1GB)
-      disk_table = ($disks | Out-String)
-      top_procs  = ($procs | Out-String)
       ts         = (Get-Date).ToString("o")
     }
 

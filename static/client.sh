@@ -26,10 +26,7 @@ CPU_MODEL="$(awk -F: "/^model name/{print \$2; exit}" /proc/cpuinfo 2>/dev/null 
 CORES="$( (command -v nproc >/dev/null && nproc) || getconf _NPROCESSORS_ONLN 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo unknown)"
 
 MEM="$( (free -h | awk "/^Mem:/ {print \$2\" total, \"\$3\" used, \"\$4\" free\"}") 2>/dev/null || vm_stat 2>/dev/null || echo unknown )"
-DISK="$(df -h 2>/dev/null | awk "NR==1 || /\\/$/ {print}" )"
 
-# Top processes (best-effort)
-TOP_PROCS="$(ps -eo pid,comm,%cpu,%mem --sort=-%cpu 2>/dev/null | head -n 11 || echo unavailable)"
 
 # Build JSON safely
 json_escape() { python3 - <<'PY'
@@ -37,8 +34,6 @@ import json,sys
 print(json.dumps(sys.stdin.read()))
 PY
 }
-DISK_JSON=$(printf "%s" "$DISK" | json_escape)
-PROCS_JSON=$(printf "%s" "$TOP_PROCS" | json_escape)
 
 read -r -d '' PAYLOAD <<EOF || true
 {
@@ -49,8 +44,6 @@ read -r -d '' PAYLOAD <<EOF || true
   "cpu_model": "$CPU_MODEL",
   "cores": "$CORES",
   "memory": "$MEM",
-  "disk_table": $DISK_JSON,
-  "top_procs": $PROCS_JSON,
   "ts": "$(date -Is)"
 }
 EOF
